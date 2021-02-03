@@ -1,16 +1,14 @@
 %Extrapolate MSD to delta r = 100 um or 1000 um by using weighted least
 %squares linear fitting in log-log space
-function [] = get_msd_extrap_front(path_folder, deltar)
+function [] = get_msd_extrap_front(path_folder, experiment, deltar)
 %Add path with curve fitting functions
-%addpath('/Users/qinqinyu/Documents/hallatscheck_lab/office_desktop_files/scripts/curve_fitting')
 
 %Get folders with data on MSD as a function of window length 
-%path_folder = '/Volumes/PORTKeioDat/20190924_1000_validation';
-msd_folder = [path_folder filesep 'front_msd_mat/'];
+msd_folder = [path_folder filesep 'mat' filesep experiment];
 
 %Make folder to store results if it doesn't already exist
-if ~isdir([path_folder filesep 'summary_data'])
-    mkdir([path_folder filesep 'summary_data']);
+if ~isdir([path_folder filesep 'extrapolated'])
+    mkdir([path_folder filesep 'extrapolated']);
 end
 
 %Figure out number of files (trials) to work through
@@ -28,7 +26,7 @@ yval_all_err = nan(96, 1);
 %Loop through all files
 for p=1:nfiles
     filename = files(p).name;
-    load([path_folder filesep 'front_msd_mat' filesep filename]);
+    load([path_folder filesep 'mat' filesep experiment filesep filename]);
     msd_avg_weighted = rho_L;
     msd_ste_weighted = rho_L_ste;
     
@@ -50,6 +48,7 @@ for p=1:nfiles
         
         %Calculate extrapolated values
         log_yval = logx*a(2) + a(1);
+        exp(log_yval);
         yval_all(ind) = exp(log_yval);
         
         %And errors
@@ -63,13 +62,8 @@ for p=1:nfiles
 end
 
 %Write results to csv file
-csvwrite([path_folder filesep 'summary_data/front_msd_' num2str(deltar) 'um.csv'],[yval_all, yval_all_err])
+csvwrite([path_folder filesep 'extrapolated' filesep experiment '.csv'],[yval_all, yval_all_err])
 
-%Plot to compare extrapolated value for window size 100um and 1000um
-% figure
-% scatter(yval_all100, yval_all1000)
-% xlabel('MSD(\Deltar = 100um)')
-% ylabel('MSD(\Deltar = 1000um)')
 end
 
 

@@ -1,4 +1,4 @@
-function get_growth_layer_depth(path_folder)
+function get_growth_layer_depth(path_folder, experiment)
 
     % Define parameters
     vye_min = 1; % To prevent beads that are randomly moving in back from contributing and that are stationary
@@ -10,17 +10,20 @@ function get_growth_layer_depth(path_folder)
 
     %Create folder for saving growth layer depth images and mat files if it doesn't already
     %extist
-    if ~isdir([path_folder filesep 'growth_layer_depth_images'])
-        mkdir([path_folder filesep 'growth_layer_depth_images']);
+    if ~isdir([path_folder filesep 'growth_layer_depth' filesep 'images' filesep experiment])
+        mkdir([path_folder filesep 'growth_layer_depth' filesep 'images' filesep experiment]);
     end
-    if ~isdir([path_folder filesep 'growth_layer_depth_mat'])
-        mkdir([path_folder filesep 'growth_layer_depth_mat']);
+    if ~isdir([path_folder filesep 'growth_layer_depth' filesep 'mat' filesep experiment])
+        mkdir([path_folder filesep 'growth_layer_depth' filesep 'mat' filesep experiment]);
+    end
+    if ~isdir([path_folder filesep 'growth_layer_depth' filesep 'summary'])
+        mkdir([path_folder filesep 'growth_layer_depth' filesep 'summary']);
     end
 
     d_all = nan(96, 1);
     derr_all = nan(96,1);
 
-    files = dir2([path_folder filesep 'tracks_mat']);
+    files = dir2([path_folder filesep 'tracks_mat' filesep experiment]);
 
     function_exp        = @(x,a) a(1)*exp(a(2)*x);
     a0 = [1,-1/100];
@@ -32,7 +35,7 @@ function get_growth_layer_depth(path_folder)
         k2 = strfind(filename, 't');
         strain_name = filename(k2+1:k-1)
 
-        load([path_folder filesep 'tracks_mat' filesep files(i).name]);
+        load([path_folder filesep 'tracks_mat' filesep experiment filesep files(i).name]);
 
         if ~isempty(xlinked)
 
@@ -169,7 +172,7 @@ function get_growth_layer_depth(path_folder)
                 set(gca,'YScale','log')
 
                 %Save figure
-                saveas(g,[path_folder filesep 'growth_layer_depth_images' filesep strain_name],'pdf')
+                saveas(g,[path_folder filesep 'growth_layer_depth' filesep 'images' filesep experiment filesep strain_name],'pdf')
 
                 dy_binned = bins_center_nonan;
                 ratio_binned = mean_nonan;
@@ -178,11 +181,11 @@ function get_growth_layer_depth(path_folder)
                 ratio = ratio_final_all;
 
                 %Save mat file
-                save([path_folder filesep 'growth_layer_depth_mat' filesep strain_name], 'dy_binned', 'ratio_binned', 'ratio_err_binned', 'dy', 'ratio', 'd', 'derr');
+                save([path_folder filesep 'growth_layer_depth' filesep 'mat' filesep experiment filesep strain_name], 'dy_binned', 'ratio_binned', 'ratio_err_binned', 'dy', 'ratio', 'd', 'derr');
                 close all
             end
         end
     end
 
-    csvwrite([path_folder filesep 'summary_data/growth_layer_depth.csv'],[d_all, derr_all]);
+    csvwrite([path_folder filesep 'growth_layer_depth' filesep 'summary' filesep experiment '.csv'],[d_all, derr_all]);
 end

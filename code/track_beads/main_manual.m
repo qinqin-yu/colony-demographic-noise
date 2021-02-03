@@ -1,13 +1,11 @@
-function []=main_manual(path_folder)
+function []=main_manual(path_folder, experiment)
 % This function imports the focused images, detects the particles, does
 % single particle tracking on subsequent images, then links particles in
 % multiple images together. 
 
 % INPUTS:
 
-% Path folder: the main folder for the experiment. There should be a
-% subfolder called "focused_images2" where the focused images are generated
-% using the python code "Resave focused images.ipynb".
+% Path folder: the folder containing the focused images for the experiment.
 
 % masscut: the intensity cutoff for the detected particles
 
@@ -22,18 +20,20 @@ function []=main_manual(path_folder)
 % OUTPUTS: 
 
 % mat file of detected particle positions and processed image in
-% particle_positions/p[strain_name].mat
+%   particle_positions/[experiment_name]/p[strain_name].mat
 
-% Saved image of tracks in tracks_images/t[strain_name].png, color coded by
-% red: moving tracks, blue: static tracks
+% Saved image of tracks in 
+%   tracks_images/[experiment_name]/t[strain_name].png, color coded by 
+%   red: moving tracks, blue: static tracks
 
-% mat file of tracks coordinates in tracks_mat/t[strain_name].png with:
+% mat file of tracks coordinates in 
+%   tracks_mat/[experiment_name]/t[strain_name].png with:
 %   xlinked, ylinked: x, y coordinates of moving tracks
 %   xlinked_before, ylinked_before: x, y coordinates of all tracks
 %   totdelx_all, totdely_all: total background drift
 %   conv: conversion in microns/pixel
 
-% Particle tracking parameters in summary_data/tracking_parameters.csv
+% Particle tracking parameters in tracking_parameters/[experiment_name].csv
 % including:
 %   experiment_all: name of experiment
 %   strains_all: name of strain
@@ -62,7 +62,7 @@ conv = 0.8681; %for 56x: 0.8681 um/pixel
 numpart_thresh = 800;
 
 % Total (shortest path) displacement between beginning and end of track
-% threshold. Below this distance, the tracks is classified as a static bead
+% threshold. Below this distance, the track is classified as a static bead
 % or noise.
 delrthresh = 10;
 
@@ -70,7 +70,7 @@ delrthresh = 10;
 %path_folder = uigetdir('/Volumes/PORTKeioDat/','Data changed folder'); 
 
 % Import all subfolders (one for each colony position)
-focused_images_folder = [path_folder filesep 'focused_images2/'];
+focused_images_folder = [path_folder filesep 'example_bead_images' filesep experiment];
 files = dir2(focused_images_folder);
 dirFlags = [files.isdir];
 subFolders = files(dirFlags);
@@ -78,20 +78,16 @@ subFolders = files(dirFlags);
 nfolders = length(subFolders);
 
 ind = strfind(path_folder, '/');
-experiment = path_folder(ind(3)+1:ind(4)-1);
 
-tracking_par_filename = [path_folder filesep 'summary_data' filesep 'tracking_parameters.csv'];
+tracking_par_filename = [path_folder filesep 'tracking_parameters' filesep experiment '.csv'];
 
 T = readtable(tracking_par_filename, 'ReadVariableNames', true);
 inds = find(T.manually_changed);
-
-
 
 % Some variables for storing the strains that are not computed because
 % there were too many particles
 not_computed = {};
 index = 1;
-
 
 % Loop through all subfolders
 for i = 1:length(inds)
@@ -105,34 +101,22 @@ for i = 1:length(inds)
     xmax = T.xmax_all(ind)/conv;
     ymin = T.ymin_all(ind)/conv;
     ymax = T.ymax_all(ind)/conv;
-%for i=start_folder:nfolders
-%for i = 1:length(strain_names)
-   %strain_name = strain_list{i};
-
-    % Get the name of the strain without the 'f' at the end (denoting focused
-    % images)
-    %strain_name = subFolders(i).name;
-    %k = strfind(strain_name,'f');
-    %strain_name = strain_name(1:k-1);
 
     disp(strcat('Detecting particles for:', strain_name))
-
-    strain_focused_images_folder = strcat(focused_images_folder, strain_name, 'f/rfp');
+    
+    strain_focused_images_folder = [focused_images_folder filesep strain_name 'f/rfp'];
 
     % Detect the particles in the focused images
     [image_info, nfiles] = detect_particles(strain_focused_images_folder, masscut, radius);
     % image_info stores the information of all of the tracked particles
     
     % Check if the folder for saving particle positions already exists
-    if ~isfolder([path_folder filesep 'particle_positions'])
-        mkdir([path_folder filesep 'particle_positions']);
-    end
-    if ~isfolder([path_folder filesep 'particle_positions'])
-        mkdir([path_folder filesep 'particle_positions']);
+    if ~isfolder([path_folder filesep 'particle_positions' filesep experiment])
+        mkdir([path_folder filesep 'particle_positions' filesep experiment]);
     end
 
     % Save mat variables of particle positions
-    save([path_folder filesep 'particle_positions/p' strain_name '.mat'], 'image_info');
+    save([path_folder filesep 'particle_positions' filesep experiment filesep 'p' strain_name '.mat'], 'image_info');
     
     % Single particle tracking
     % Calculate single step displacements and link multiple timepoints
@@ -162,20 +146,6 @@ for i = 1:length(inds)
     disp(strcat('Calculating single step displacements for:', strain_name))
 
     % Parameters for single particle tracking
-
-    % Set the region used for correcting for background drift with static beads
-
-    % xmin = 0;
-    % For the first row of strains, the static region is below the colony,
-    % whereas for the subsequent rows, the static region is above the colony
-%     if str2num(strain_name)<12
-%         ymin = 900;%900;
-%         ymax = 1040;
-%     else
-%         ymin = 0;
-%         ymax = 100;%100;
-%     end
-%     xmax = 1388;%1388;
     
     % Threshold distance for calling a static particle
     rthresh = 0.5;%0.5;
@@ -288,23 +258,19 @@ for i = 1:length(inds)
     disp(strcat('Saving track files for: ', strain_name));
 
     % Check if the folder for saving tracks already exists
-    if ~isfolder([path_folder filesep 'tracks_images'])
-        mkdir([path_folder filesep 'tracks_images']);
+    if ~isfolder([path_folder filesep 'tracks_images' filesep experiment])
+        mkdir([path_folder filesep 'tracks_images' filesep experiment]);
     end
-    if ~isfolder([path_folder filesep 'tracks_mat'])
-        mkdir([path_folder filesep 'tracks_mat']);
+    if ~isfolder([path_folder filesep 'tracks_mat' filesep experiment])
+        mkdir([path_folder filesep 'tracks_mat' filesep experiment]);
     end
 
     % Save figure of tracks
-    saveas(f,[path_folder filesep 'tracks_images/t' strain_name],'png')
+    saveas(f,[path_folder filesep 'tracks_images' filesep experiment filesep 't' strain_name],'png')
 
     % Save mat variables of tracks
-    save([path_folder filesep 'tracks_mat/t' strain_name '.mat'], 'xlinked', 'ylinked', 'xlinked_before', 'ylinked_before', 'totdelx_all', 'totdely_all', 'conv');
-    
-    
-    
-    %INVESTIGATE IF SINGLE STEPS THAT ARE TOO SMALL ARE REJECTED
-    %WRITE DOWN OUTPUT PARAMETERS AT TOP OF FUNCTION
+    save([path_folder filesep 'tracks_mat' filesep experiment filesep 't' strain_name '.mat'], 'xlinked', 'ylinked', 'xlinked_before', 'ylinked_before', 'totdelx_all', 'totdely_all', 'conv');
+   
     % Close the figure
     close 
     
@@ -341,14 +307,6 @@ for i = 1:length(inds)
     T(ind, 'ymin_all') = {round(ymin*conv)};
     T(ind, 'ymax_all') = {round(ymax*conv)};
     
-    % Check if the folder for saving summary data already exists
-    if ~isfolder([path_folder filesep 'summary_data'])
-        mkdir([path_folder filesep 'summary_data']);
-    end
-    if ~isfolder([path_folder filesep 'summary_data'])
-        mkdir([path_folder filesep 'summary_data']);
-    end
-
     % Save the tracking parameters in a csv file
 
     writetable(T, tracking_par_filename);

@@ -1,29 +1,19 @@
-function local_front_roughness_fit(path_folder, start_folder)
-%path_folder = uigetdir('/Users/qinqinyu/Documents/hallatschek_lab/data_changed/','Main folder'); 
-%path_folder = '/Volumes/PORTKeioDat/20190910_1024_KQY3a';
+function local_front_roughness_fit(path_folder, experiment, start_folder)
 
-colony_mat_folder = [path_folder filesep 'colony_mat'];
+colony_mat_folder = [path_folder filesep 'whole_colony_images/colony_mat' filesep experiment];
 files = dir2(colony_mat_folder);
 nfiles = length(files);
 
 %Create folder for saving MSD images and mat files if it doesn't already
 %extist
-if ~isdir([path_folder filesep 'front_msd_images'])
-    mkdir([path_folder filesep 'front_msd_images']);
+if ~isdir([path_folder filesep 'front_roughness' filesep 'images' filesep experiment])
+    mkdir([path_folder filesep 'front_roughness' filesep 'images' filesep experiment]);
 end
-if ~isdir([path_folder filesep 'front_msd_mat'])
-    mkdir([path_folder filesep 'front_msd_mat']);
+if ~isdir([path_folder filesep 'front_roughness' filesep 'mat' filesep experiment])
+    mkdir([path_folder filesep 'front_roughness' filesep 'mat' filesep experiment]);
 end
 
-%filenames_roughness = cell(1,nfiles/2);
-
-%local_msd = zeros(1, nfiles/2);
-%local_msd96 = zeros(12,8);
-%local_roughness_all_info = cell(nfiles,2);
 front_roughness = nan(96,1);
-
-%Lmin = 10;
-%Lmax = 100;
 
 %Defining the window sizes (same as for msd measurement on tracks)
 %conv = 0.2481; %pixels/micron. Conversion for thresholding static particles (1 pixel)
@@ -40,7 +30,7 @@ maxL = maxL_pix/conv;
 all_L = minL:dx:maxL;
 
 %Loop through all files
-for i=start_folder:nfiles%1:nfiles
+for i=start_folder:nfiles
     i
     %Figure out the well position
     filename = files(i).name;
@@ -131,16 +121,11 @@ for i=start_folder:nfiles%1:nfiles
     ylabel('Mean squared front roughness [\mum^2]')
     
     %Save figure
-    saveas(g,[path_folder filesep 'front_msd_images/' strain_name],'png')
+    saveas(g,[path_folder filesep 'front_roughness/images' filesep experiment filesep strain_name],'png')
 
     %Save mat file
-    save([path_folder filesep 'front_msd_mat/m' strain_name], 'all_L', 'rho_L', 'rho_L_ste');
+    save([path_folder filesep 'front_roughness/mat' filesep experiment filesep 'm' strain_name], 'all_L', 'rho_L', 'rho_L_ste');
     close all
-%     figure
-%     hold on
-%     scatter(x,y)
-%     xcirc = R*cos(theta_all)+a;
-%     ycirc = R*sin(theta_all)+b;
-%     scatter(xcirc, ycirc)
+
 end
 end

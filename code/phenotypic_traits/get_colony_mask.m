@@ -1,4 +1,4 @@
-function get_colony_mask(path_folder)
+function get_colony_mask(path_folder, experiment)
 %This code takes the bw images from the calibration (taken at the beginning
 %of imaging) and extracts x, y coordinates, fits circle, saves these
 %variables and an overlay image
@@ -9,15 +9,15 @@ conv = 0.1240;
 %0.8681 pixels = 1 um for 56x;
 
 %path_folder = '/Volumes/PORTKeioDat/20190910_2036_KQY4a';
-colony_images_binary_folder = [path_folder filesep 'colony_images_binary'];
-colony_images_folder = [path_folder filesep 'colony_images2'];
-colony_images_edge_folder = [path_folder filesep 'colony_edge'];
+colony_images_binary_folder = [path_folder filesep 'binary' filesep experiment];
+colony_images_folder = [path_folder filesep 'images' filesep experiment];
+colony_images_edge_folder = [path_folder filesep 'colony_edge' filesep experiment];
 
-if ~isdir([path_folder filesep 'colony_edge'])
-    mkdir([path_folder filesep 'colony_edge']);
+if ~isdir([path_folder filesep 'colony_edge' filesep experiment])
+    mkdir([path_folder filesep 'colony_edge' filesep experiment]);
 end
-if ~isdir([path_folder filesep 'colony_mat'])
-    mkdir([path_folder filesep 'colony_mat']);
+if ~isdir([path_folder filesep 'colony_mat' filesep experiment])
+    mkdir([path_folder filesep 'colony_mat' filesep experiment]);
 end
 
 files = dir2(colony_images_binary_folder);
@@ -42,7 +42,7 @@ for i = 1:nfiles
     
     if length(x)>1
             [a, b, R] = find_circles(x, y);
-            output_image_filename = [path_folder filesep 'colony_edge' filesep 'bw' image_name];
+            output_image_filename = [path_folder filesep 'colony_edge' filesep experiment filesep 'bw' image_name];
             %plot_image_fitted_circle(output_image_filename, I, x, y, a, b, R, 'off');
             %saveas(f,[path_folder filesep 'colony_edge' filesep image_files(j).name 'bw'],'png');
             x = x/conv;
@@ -50,7 +50,7 @@ for i = 1:nfiles
             a = a/conv;
             b = b/conv;
             R = R/conv;
-            save([path_folder filesep 'colony_mat' filesep image_name_no_tif '.mat'], 'x', 'y', 'a', 'b', 'R', 'conv');
+            save([path_folder filesep 'colony_mat' filesep experiment filesep  image_name_no_tif '.mat'], 'x', 'y', 'a', 'b', 'R', 'conv');
             imwrite(Ioverlay, output_image_filename);
     end
         

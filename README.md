@@ -35,7 +35,7 @@ Please contact qinqinyu[at]berkeley.edu if you have any questions.
 * particle_positions -- .mat data files of the particle positions from single particle tracking
 * relative_msd_50um -- the MSD normalized to the average of the wild type colony MSDs on each plate
 * tracking_parameters -- the single particle tracking parameters used in code/track_beads/run_main.m
-* manually_changed=1 indicates that the parameters have been manually updated to improve upon tracking results from default parameters. Running run_main.m with the main_manual function only runs the single particle tracking code for the manually updated colonies.
+  * manually_changed=1 indicates that the parameters have been manually updated to improve upon tracking results from default parameters. Running run_main.m with the main_manual function only runs the single particle tracking code for the manually updated colonies.
 * tracks_images -- examples of the bead trajectories
 * tracks_mat -- .mat data files of the bead trajectories over time for each colony
 * validation -- data to reproduce Figure 1e of the MSD vs fraction of diversity preserved

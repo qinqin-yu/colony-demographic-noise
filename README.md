@@ -1,7 +1,8 @@
 # colony-demographic-noise
 ## Introduction
 This repository contains code and data for the manuscript:
-Yu, Q, M. Gralka, M.C. Duvernoy, M. Sousa, A. Harpak, O. Hallatschek, Mutability of demographic noise in microbial range expansions, bioRxiv, 2020.
+Yu, Q., Gralka, M., Duvernoy, MC. et al. Mutability of demographic noise in microbial range expansions. ISME J 15, 2643–2654 (2021). https://doi.org/10.1038/s41396-021-00951-9
+bioRxiv: Yu, Q, M. Gralka, M.C. Duvernoy, M. Sousa, A. Harpak, O. Hallatschek, Mutability of demographic noise in microbial range expansions, bioRxiv, 2020. https://www.biorxiv.org/content/10.1101/2020.10.27.357483v1
 
 Please contact qinqinyu[at]berkeley.edu if you have any questions. 
 
